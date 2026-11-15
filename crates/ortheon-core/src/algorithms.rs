@@ -46,7 +46,9 @@ pub fn degree_stats(graph: &Graph) -> DegreeStats {
 
 /// Compute connected components of an undirected graph.
 pub fn components(graph: &Graph) -> Result<Vec<Vec<NodeId>>, GraphError> {
-    if graph.is_directed() { return Err(GraphError::RequiresUndirectedGraph); }
+    if graph.is_directed() {
+        return Err(GraphError::RequiresUndirectedGraph);
+    }
     component_walk(graph)
 }
 
@@ -55,7 +57,9 @@ pub fn components(graph: &Graph) -> Result<Vec<Vec<NodeId>>, GraphError> {
 /// Edge direction is ignored for component membership. This is not a strong
 /// connected-components algorithm.
 pub fn weak_components(graph: &Graph) -> Result<Vec<Vec<NodeId>>, GraphError> {
-    if !graph.is_directed() { return Err(GraphError::RequiresDirectedGraph); }
+    if !graph.is_directed() {
+        return Err(GraphError::RequiresDirectedGraph);
+    }
     component_walk(graph)
 }
 
@@ -68,9 +72,13 @@ fn component_walk(graph: &Graph) -> Result<Vec<Vec<NodeId>>, GraphError> {
         let mut queue = VecDeque::from([start]);
         while let Some(current) = queue.pop_front() {
             for edge in graph.edges() {
-                let next = if edge.from == current { Some(edge.to) }
-                    else if edge.to == current { Some(edge.from) }
-                    else { None };
+                let next = if edge.from == current {
+                    Some(edge.to)
+                } else if edge.to == current {
+                    Some(edge.from)
+                } else {
+                    None
+                };
                 if let Some(next) = next {
                     if unseen.remove(&next) {
                         component.insert(next);
@@ -91,7 +99,9 @@ mod tests {
     #[test]
     fn undirected_components_include_isolated_vertices() {
         let mut graph = Graph::undirected();
-        for id in 1..=4 { graph.add_node(id, id.to_string()).unwrap(); }
+        for id in 1..=4 {
+            graph.add_node(id, id.to_string()).unwrap();
+        }
         graph.add_edge(1, 2).unwrap();
         graph.add_edge(2, 3).unwrap();
         assert_eq!(components(&graph).unwrap(), vec![vec![1, 2, 3], vec![4]]);
@@ -100,7 +110,9 @@ mod tests {
     #[test]
     fn directed_weak_components_ignore_direction() {
         let mut graph = Graph::directed();
-        for id in 1..=3 { graph.add_node(id, "").unwrap(); }
+        for id in 1..=3 {
+            graph.add_node(id, "").unwrap();
+        }
         graph.add_edge(2, 1).unwrap();
         assert_eq!(weak_components(&graph).unwrap(), vec![vec![1, 2], vec![3]]);
     }
