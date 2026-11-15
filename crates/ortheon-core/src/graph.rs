@@ -28,50 +28,79 @@ pub struct Graph {
 impl Graph {
     /// Create an empty directed graph.
     #[must_use]
-    pub fn directed() -> Self { Self::new(true) }
+    pub fn directed() -> Self {
+        Self::new(true)
+    }
 
     /// Create an empty undirected graph.
     #[must_use]
-    pub fn undirected() -> Self { Self::new(false) }
+    pub fn undirected() -> Self {
+        Self::new(false)
+    }
 
     fn new(directed: bool) -> Self {
-        Self { directed, nodes: BTreeMap::new(), edges: BTreeSet::new() }
+        Self {
+            directed,
+            nodes: BTreeMap::new(),
+            edges: BTreeSet::new(),
+        }
     }
 
     /// Return whether this graph is directed.
     #[must_use]
-    pub const fn is_directed(&self) -> bool { self.directed }
+    pub const fn is_directed(&self) -> bool {
+        self.directed
+    }
 
     /// Number of vertices.
     #[must_use]
-    pub fn node_count(&self) -> usize { self.nodes.len() }
+    pub fn node_count(&self) -> usize {
+        self.nodes.len()
+    }
 
     /// Number of edges.
     #[must_use]
-    pub fn edge_count(&self) -> usize { self.edges.len() }
+    pub fn edge_count(&self) -> usize {
+        self.edges.len()
+    }
 
     /// Iterate over vertices in ascending identifier order.
     pub fn nodes(&self) -> impl Iterator<Item = (NodeId, &str)> {
-        self.nodes.iter().map(|(id, label)| (*id, label.as_str()))
+        self.nodes
+            .iter()
+            .map(|(id, label)| (*id, label.as_str()))
     }
 
     /// Iterate over edges in canonical order.
     pub fn edges(&self) -> impl Iterator<Item = Edge> + '_ {
-        self.edges.iter().map(|(from, to)| Edge { from: *from, to: *to })
+        self.edges.iter().map(|(from, to)| Edge {
+            from: *from,
+            to: *to,
+        })
     }
 
     /// Insert a vertex with a stable identifier and label.
     pub fn add_node(&mut self, id: NodeId, label: impl Into<String>) -> Result<(), GraphError> {
-        if self.nodes.contains_key(&id) { return Err(GraphError::DuplicateNode(id)); }
+        if self.nodes.contains_key(&id) {
+            return Err(GraphError::DuplicateNode(id));
+        }
         self.nodes.insert(id, label.into());
         Ok(())
     }
 
     /// Insert an edge. Re-inserting an existing edge has no effect.
     pub fn add_edge(&mut self, from: NodeId, to: NodeId) -> Result<(), GraphError> {
-        if !self.nodes.contains_key(&from) { return Err(GraphError::MissingNode(from)); }
-        if !self.nodes.contains_key(&to) { return Err(GraphError::MissingNode(to)); }
-        let edge = if self.directed || from <= to { (from, to) } else { (to, from) };
+        if !self.nodes.contains_key(&from) {
+            return Err(GraphError::MissingNode(from));
+        }
+        if !self.nodes.contains_key(&to) {
+            return Err(GraphError::MissingNode(to));
+        }
+        let edge = if self.directed || from <= to {
+            (from, to)
+        } else {
+            (to, from)
+        };
         self.edges.insert(edge);
         Ok(())
     }
@@ -80,13 +109,19 @@ impl Graph {
     pub fn validate(&self) -> Result<(), GraphError> {
         for (from, to) in &self.edges {
             if !self.nodes.contains_key(from) {
-                return Err(GraphError::InvalidRepresentation(format!("edge source {from} is absent")));
+                return Err(GraphError::InvalidRepresentation(format!(
+                    "edge source {from} is absent"
+                )));
             }
             if !self.nodes.contains_key(to) {
-                return Err(GraphError::InvalidRepresentation(format!("edge target {to} is absent")));
+                return Err(GraphError::InvalidRepresentation(format!(
+                    "edge target {to} is absent"
+                )));
             }
             if !self.directed && from > to {
-                return Err(GraphError::InvalidRepresentation("undirected edge is not normalized".into()));
+                return Err(GraphError::InvalidRepresentation(
+                    "undirected edge is not normalized".into(),
+                ));
             }
         }
         Ok(())
@@ -121,20 +156,30 @@ impl Graph {
     /// Directed graphs follow edge direction. Undirected graphs traverse
     /// either endpoint. Results are returned in ascending identifier order.
     pub fn reachable_from(&self, start: NodeId) -> Result<Vec<NodeId>, GraphError> {
-        if !self.nodes.contains_key(&start) { return Err(GraphError::UnknownNode(start)); }
+        if !self.nodes.contains_key(&start) {
+            return Err(GraphError::UnknownNode(start));
+        }
         let mut seen = BTreeSet::from([start]);
         let mut queue = VecDeque::from([start]);
         while let Some(current) = queue.pop_front() {
             for (from, to) in &self.edges {
                 let next = if self.directed {
-                    if *from == current { Some(*to) } else { None }
+                    if *from == current {
+                        Some(*to)
+                    } else {
+                        None
+                    }
                 } else if *from == current {
                     Some(*to)
                 } else if *to == current {
                     Some(*from)
-                } else { None };
+                } else {
+                    None
+                };
                 if let Some(next) = next {
-                    if seen.insert(next) { queue.push_back(next); }
+                    if seen.insert(next) {
+                        queue.push_back(next);
+                    }
                 }
             }
         }
@@ -146,15 +191,20 @@ impl Graph {
     /// Kahn's algorithm is used. Returns CycleDetected if a directed cycle
     /// exists and RequiresDirectedGraph for an undirected graph.
     pub fn topological_order(&self) -> Result<Vec<NodeId>, GraphError> {
-        if !self.directed { return Err(GraphError::RequiresDirectedGraph); }
-        let mut indegree: BTreeMap<NodeId, usize> = self.nodes.keys().map(|id| (*id, 0)).collect();
+        if !self.directed {
+            return Err(GraphError::RequiresDirectedGraph);
+        }
+        let mut indegree: BTreeMap<NodeId, usize> =
+            self.nodes.keys().map(|id| (*id, 0)).collect();
         let mut outgoing: BTreeMap<NodeId, Vec<NodeId>> = BTreeMap::new();
         for (from, to) in &self.edges {
             *indegree.get_mut(to).expect("validated edge endpoint") += 1;
             outgoing.entry(*from).or_default().push(*to);
         }
-        let mut ready: BTreeSet<NodeId> = indegree.iter()
-            .filter_map(|(id, degree)| (*degree == 0).then_some(*id)).collect();
+        let mut ready: BTreeSet<NodeId> = indegree
+            .iter()
+            .filter_map(|(id, degree)| (*degree == 0).then_some(*id))
+            .collect();
         let mut order = Vec::with_capacity(self.nodes.len());
         while let Some(node) = ready.pop_first() {
             order.push(node);
@@ -162,10 +212,16 @@ impl Graph {
                 for neighbor in neighbors {
                     let degree = indegree.get_mut(neighbor).expect("validated edge endpoint");
                     *degree -= 1;
-                    if *degree == 0 { ready.insert(*neighbor); }
+                    if *degree == 0 {
+                        ready.insert(*neighbor);
+                    }
                 }
             }
         }
-        if order.len() == self.nodes.len() { Ok(order) } else { Err(GraphError::CycleDetected) }
+        if order.len() == self.nodes.len() {
+            Ok(order)
+        } else {
+            Err(GraphError::CycleDetected)
+        }
     }
 }
