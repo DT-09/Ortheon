@@ -1,0 +1,13 @@
+[package]
+name = "ortheon-core"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+description = "Deterministic structural representations and algorithms for ORTHEON"
+
+[dependencies]
+sha2 = "0.10"
+
+[lints]
+workspace = true
