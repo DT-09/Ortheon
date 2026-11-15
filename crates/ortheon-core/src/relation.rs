@@ -11,7 +11,9 @@ pub enum RelationError<T> {
 impl<T: std::fmt::Debug> fmt::Display for RelationError<T> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Self::OutsideUniverse(value) => write!(f, "element {value:?} is outside the relation universe"),
+            Self::OutsideUniverse(value) => {
+                write!(f, "element {value:?} is outside the relation universe")
+            },
         }
     }
 }
@@ -94,7 +96,9 @@ impl<T: Ord + Clone> FiniteRelation<T> {
     #[must_use]
     pub fn is_transitive(&self) -> bool {
         self.pairs.iter().all(|(a, b)| {
-            self.pairs.iter().all(|(c, d)| b != c || self.contains(a, d))
+            self.pairs
+                .iter()
+                .all(|(c, d)| b != c || self.contains(a, d))
         })
     }
 
@@ -103,7 +107,11 @@ impl<T: Ord + Clone> FiniteRelation<T> {
     pub fn inverse(&self) -> Self {
         Self {
             universe: self.universe.clone(),
-            pairs: self.pairs.iter().map(|(a, b)| (b.clone(), a.clone())).collect(),
+            pairs: self
+                .pairs
+                .iter()
+                .map(|(a, b)| (b.clone(), a.clone()))
+                .collect(),
         }
     }
 
@@ -144,7 +152,9 @@ impl<T: Ord + Clone> FiniteRelation<T> {
         for (i, row) in reach.iter().enumerate() {
             for (j, reachable) in row.iter().enumerate() {
                 if *reachable {
-                    closure.pairs.insert((elements[i].clone(), elements[j].clone()));
+                    closure
+                        .pairs
+                        .insert((elements[i].clone(), elements[j].clone()));
                 }
             }
         }
@@ -159,7 +169,10 @@ mod tests {
     #[test]
     fn rejects_elements_outside_declared_universe() {
         let mut relation = FiniteRelation::new([1, 2, 3]);
-        assert_eq!(relation.insert(1, 4), Err(RelationError::OutsideUniverse(4)));
+        assert_eq!(
+            relation.insert(1, 4),
+            Err(RelationError::OutsideUniverse(4))
+        );
     }
 
     #[test]
