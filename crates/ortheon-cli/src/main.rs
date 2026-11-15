@@ -1,4 +1,4 @@
-use ortheon_core::{degree_stats, weak_components, Graph};
+use ortheon_core::{Graph, degree_stats, weak_components};
 use std::error::Error;
 
 fn main() -> Result<(), Box<dyn Error>> {
@@ -7,7 +7,9 @@ fn main() -> Result<(), Box<dyn Error>> {
         "demo" => demo(),
         "inspect" => inspect(),
         "help" | "--help" | "-h" => {
-            println!("ORTHEON — universal structural computation\n\nUSAGE:\n  ortheon-cli [demo|inspect|help]\n\nCOMMANDS:\n  demo     Run a deterministic structural analysis example\n  inspect  Print the example graph's structural summary");
+            println!(
+                "ORTHEON — universal structural computation\n\nUSAGE:\n  ortheon-cli [demo|inspect|help]\n\nCOMMANDS:\n  demo     Run a deterministic structural analysis example\n  inspect  Print the example graph's structural summary"
+            );
             Ok(())
         }
         other => Err(format!("unknown command '{other}'; run with --help").into()),
@@ -46,9 +48,13 @@ fn inspect() -> Result<(), Box<dyn Error>> {
     graph.validate()?;
     println!("directed: {}", graph.is_directed());
     println!("nodes:");
-    for (id, label) in graph.nodes() { println!("  {id}: {label}"); }
+    for (id, label) in graph.nodes() {
+        println!("  {id}: {label}");
+    }
     println!("edges:");
-    for edge in graph.edges() { println!("  {} -> {}", edge.from, edge.to); }
+    for edge in graph.edges() {
+        println!("  {} -> {}", edge.from, edge.to);
+    }
     println!("fingerprint: {}", graph.fingerprint());
     Ok(())
 }
