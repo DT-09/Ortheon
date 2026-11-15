@@ -6,7 +6,7 @@ mod algorithms;
 mod error;
 mod graph;
 
-pub use algorithms::{components, degree_stats, weak_components, DegreeStats};
+pub use algorithms::{DegreeStats, components, degree_stats, weak_components};
 pub use error::GraphError;
 pub use graph::{Edge, Graph, NodeId};
 
