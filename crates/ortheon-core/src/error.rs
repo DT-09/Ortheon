@@ -27,8 +27,13 @@ impl fmt::Display for GraphError {
             Self::UnknownNode(id) => write!(f, "unknown node {id}"),
             Self::RequiresDirectedGraph => write!(f, "operation requires a directed graph"),
             Self::RequiresUndirectedGraph => write!(f, "operation requires an undirected graph"),
-            Self::CycleDetected => write!(f, "directed cycle detected; topological order does not exist"),
-            Self::InvalidRepresentation(message) => write!(f, "invalid graph representation: {message}"),
+            Self::CycleDetected => write!(
+                f,
+                "directed cycle detected; topological order does not exist"
+            ),
+            Self::InvalidRepresentation(message) => {
+                write!(f, "invalid graph representation: {message}")
+            }
         }
     }
 }
