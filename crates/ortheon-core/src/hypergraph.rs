@@ -113,7 +113,10 @@ impl Hypergraph {
     /// Return the number of hyperedges incident to a vertex.
     pub fn degree(&self, node: u64) -> Option<usize> {
         self.nodes.contains_key(&node).then(|| {
-            self.edges.values().filter(|members| members.contains(&node)).count()
+            self.edges
+                .values()
+                .filter(|members| members.contains(&node))
+                .count()
         })
     }
 
@@ -121,15 +124,15 @@ impl Hypergraph {
     pub fn validate(&self) -> Result<(), HypergraphError> {
         for (edge_id, members) in &self.edges {
             if members.is_empty() {
-                return Err(HypergraphError::InvalidRepresentation(
-                    format!("hyperedge {edge_id} is empty"),
-                ));
+                return Err(HypergraphError::InvalidRepresentation(format!(
+                    "hyperedge {edge_id} is empty"
+                )));
             }
             for node in members {
                 if !self.nodes.contains_key(node) {
-                    return Err(HypergraphError::InvalidRepresentation(
-                        format!("hyperedge {edge_id} references absent node {node}"),
-                    ));
+                    return Err(HypergraphError::InvalidRepresentation(format!(
+                        "hyperedge {edge_id} references absent node {node}"
+                    )));
                 }
             }
         }
@@ -146,7 +149,10 @@ impl Hypergraph {
             self.nodes.keys().map(|id| (*id, Vec::new())).collect();
         for (edge_id, members) in &self.edges {
             for node in members {
-                incidence.get_mut(node).expect("validated node").push(*edge_id);
+                incidence
+                    .get_mut(node)
+                    .expect("validated node")
+                    .push(*edge_id);
             }
         }
 
@@ -212,7 +218,10 @@ mod tests {
             graph.add_node(id, id.to_string()).unwrap();
         }
         graph.add_hyperedge(10, [1, 2, 3]).unwrap();
-        assert_eq!(graph.connected_components().unwrap(), vec![vec![1, 2, 3], vec![4]]);
+        assert_eq!(
+            graph.connected_components().unwrap(),
+            vec![vec![1, 2, 3], vec![4]]
+        );
         assert_eq!(graph.incidence_count(), 3);
     }
 
@@ -220,8 +229,14 @@ mod tests {
     fn empty_and_missing_member_hyperedges_are_rejected() {
         let mut graph = Hypergraph::new();
         graph.add_node(1, "one").unwrap();
-        assert_eq!(graph.add_hyperedge(1, []), Err(HypergraphError::EmptyHyperedge));
-        assert_eq!(graph.add_hyperedge(2, [1, 9]), Err(HypergraphError::MissingNode(9)));
+        assert_eq!(
+            graph.add_hyperedge(1, []),
+            Err(HypergraphError::EmptyHyperedge)
+        );
+        assert_eq!(
+            graph.add_hyperedge(2, [1, 9]),
+            Err(HypergraphError::MissingNode(9))
+        );
     }
 
     #[test]
