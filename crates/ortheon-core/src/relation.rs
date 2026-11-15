@@ -13,7 +13,7 @@ impl<T: std::fmt::Debug> fmt::Display for RelationError<T> {
         match self {
             Self::OutsideUniverse(value) => {
                 write!(f, "element {value:?} is outside the relation universe")
-            },
+            }
         }
     }
 }
