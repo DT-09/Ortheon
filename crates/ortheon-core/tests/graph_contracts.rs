@@ -52,7 +52,9 @@ fn topological_order_rejects_cycles() {
 #[test]
 fn topological_order_is_deterministic() {
     let mut graph = Graph::directed();
-    for id in [4, 2, 3, 1] { graph.add_node(id, "").unwrap(); }
+    for id in [4, 2, 3, 1] {
+        graph.add_node(id, "").unwrap();
+    }
     graph.add_edge(1, 3).unwrap();
     graph.add_edge(2, 3).unwrap();
     graph.add_edge(3, 4).unwrap();
@@ -62,7 +64,9 @@ fn topological_order_is_deterministic() {
 #[test]
 fn reachability_respects_direction() {
     let mut graph = Graph::directed();
-    for id in 1..=3 { graph.add_node(id, "").unwrap(); }
+    for id in 1..=3 {
+        graph.add_node(id, "").unwrap();
+    }
     graph.add_edge(1, 2).unwrap();
     graph.add_edge(3, 2).unwrap();
     assert_eq!(graph.reachable_from(1).unwrap(), vec![1, 2]);
