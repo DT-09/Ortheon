@@ -1,0 +1,13 @@
+[package]
+name = "ortheon-cli"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+description = "Command-line research interface for ORTHEON"
+
+[dependencies]
+ortheon-core = { path = "../ortheon-core" }
+
+[lints]
+workspace = true
