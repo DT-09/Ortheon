@@ -1,3 +1,5 @@
+//! Command-line interface for running deterministic ORTHEON demonstrations.
+
 use ortheon_core::{Graph, degree_stats, weak_components};
 use std::error::Error;
 
