@@ -66,9 +66,7 @@ impl Graph {
 
     /// Iterate over vertices in ascending identifier order.
     pub fn nodes(&self) -> impl Iterator<Item = (NodeId, &str)> {
-        self.nodes
-            .iter()
-            .map(|(id, label)| (*id, label.as_str()))
+        self.nodes.iter().map(|(id, label)| (*id, label.as_str()))
     }
 
     /// Iterate over edges in canonical order.
@@ -164,11 +162,7 @@ impl Graph {
         while let Some(current) = queue.pop_front() {
             for (from, to) in &self.edges {
                 let next = if self.directed {
-                    if *from == current {
-                        Some(*to)
-                    } else {
-                        None
-                    }
+                    if *from == current { Some(*to) } else { None }
                 } else if *from == current {
                     Some(*to)
                 } else if *to == current {
@@ -194,8 +188,7 @@ impl Graph {
         if !self.directed {
             return Err(GraphError::RequiresDirectedGraph);
         }
-        let mut indegree: BTreeMap<NodeId, usize> =
-            self.nodes.keys().map(|id| (*id, 0)).collect();
+        let mut indegree: BTreeMap<NodeId, usize> = self.nodes.keys().map(|id| (*id, 0)).collect();
         let mut outgoing: BTreeMap<NodeId, Vec<NodeId>> = BTreeMap::new();
         for (from, to) in &self.edges {
             *indegree.get_mut(to).expect("validated edge endpoint") += 1;
