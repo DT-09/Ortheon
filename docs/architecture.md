@@ -1,5 +1,15 @@
 # Architecture
 
+## Current computational substrate
+
+ORTHEON currently supports three distinct finite structural models:
+
+1. **Graph:** directed or undirected binary edges over labeled vertices.
+2. **Hypergraph:** n-ary hyperedges over labeled vertices, represented as incidence sets.
+3. **Finite binary relation:** ordered pairs over an explicit finite carrier.
+
+These models share a Rust workspace and deterministic conventions. They do not share a forced universal representation. This is intentional: converting an n-ary relation to pairwise edges or treating an arbitrary relation as an order can destroy semantics.
+
 ## Dependency direction
 
 ~~~text
@@ -7,28 +17,37 @@ ortheon-cli
     |
     v
 ortheon-core
-    |
-    +-- graph representation
-    +-- typed errors
-    +-- deterministic algorithms
+    +-- graph
+    +-- hypergraph
+    +-- finite relation
+    +-- typed errors and deterministic algorithms
 ~~~
 
-The core must not depend on the CLI, UI, network services or research notebooks. Future domain crates may depend on the core, but the core must not depend on those extensions.
+The core must not depend on the CLI, UI, network services or research notebooks.
 
-## Current kernel
+## Graph model
 
-The initial kernel is a finite labeled graph:
 - Vertex identifiers are unsigned 64-bit integers.
 - Vertex labels are UTF-8 strings.
 - Directedness is a graph-level property.
 - Edges are unique.
-- Undirected edges are stored in normalized endpoint order.
-- Ordered maps and sets provide deterministic iteration.
+- Undirected edges are normalized by endpoint order.
 
-This is a deliberately explicit first representation, not a universal representation for every mathematical object.
+## Hypergraph model
+
+- Vertex identifiers and hyperedge identifiers are unsigned 64-bit integers.
+- Each hyperedge is a non-empty set of vertices.
+- Hyperedges have stable identities.
+- Distinct hyperedges may have equal member sets.
+- Incidence is represented directly.
+
+## Finite relation model
+
+- The carrier set is explicit and finite.
+- Every pair must contain two carrier elements.
+- Pairs are ordered; symmetry is not assumed.
+- Relation properties are predicates, not implicit type guarantees.
 
 ## Extension boundaries
 
-A hypergraph must not be represented as an ordinary graph by silently losing n-ary incidence. Algebraic structures must retain their operations and axioms. Temporal structures must model time explicitly.
-
-Common traits should be introduced only when at least two real implementations demonstrate a stable shared contract.
+Future algebraic structures must retain their operations and axioms. Temporal structures must model time explicitly. Common traits should be introduced only when multiple implementations demonstrate a stable shared contract.
