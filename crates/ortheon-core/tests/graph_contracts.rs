@@ -1,3 +1,5 @@
+//! Integration tests for the public graph API and its behavioral contracts.
+
 use ortheon_core::{Graph, GraphError};
 
 #[test]
