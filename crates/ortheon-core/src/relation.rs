@@ -130,19 +130,20 @@ impl<T: Ord + Clone> FiniteRelation<T> {
             row[i] = true;
         }
         for k in 0..n {
-            for i in 0..n {
-                if reach[i][k] {
-                    for j in 0..n {
-                        reach[i][j] |= reach[k][j];
+            let pivot = reach[k].clone();
+            for row in &mut reach {
+                if row[k] {
+                    for (cell, reachable) in row.iter_mut().zip(&pivot) {
+                        *cell |= *reachable;
                     }
                 }
             }
         }
 
         let mut closure = Self::new(elements.clone());
-        for i in 0..n {
-            for j in 0..n {
-                if reach[i][j] {
+        for (i, row) in reach.iter().enumerate() {
+            for (j, reachable) in row.iter().enumerate() {
+                if *reachable {
                     closure.pairs.insert((elements[i].clone(), elements[j].clone()));
                 }
             }
