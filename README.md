@@ -21,17 +21,19 @@ Complex systems are studied through many different mathematical representations.
 
 > What shared computational foundations can support rigorous analysis across different kinds of structure without erasing their domain-specific semantics?
 
-The answer begins with explicit data models, deterministic operations, inspectable algorithms and reproducible tests—not with a universal-solver claim.
+The executable kernel now includes three distinct finite structural models: graphs, hypergraphs and binary relations. They retain their own semantics rather than being flattened into one representation.
 
 ## Current capabilities
 
 | Area | Status | Available functionality |
 |---|---|---|
-| Structural representation | Implemented | Directed and undirected labeled graphs |
+| Graph representation | Implemented | Directed and undirected labeled graphs |
+| Hypergraph representation | Implemented | Native n-ary hyperedges and incidence validation |
+| Finite relations | Implemented | Explicit carrier sets, relation properties, inverse and reflexive transitive closure |
 | Validation | Implemented | Endpoint, identity and representation invariants |
 | Fingerprinting | Implemented | SHA-256 fingerprint of canonical graph encoding |
 | Traversal | Implemented | Deterministic reachability |
-| Connectivity | Implemented | Weak components for directed graphs; connected components for undirected graphs |
+| Connectivity | Implemented | Graph components, weak graph components and hypergraph components |
 | Topology | Implemented | Degree statistics and directed topological ordering |
 | Cycle handling | Implemented | Cycle detection through Kahn's algorithm |
 | CLI | Implemented | Reproducible demonstration and graph inspection |
@@ -76,8 +78,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 ~~~text
 ORTHEON
-├── Mathematical substrate: typed graph model, stable IDs, canonical encoding
-├── Structural algorithms: traversal, components, degree, topological ordering
+├── Mathematical substrate: graphs, n-ary hypergraphs, finite binary relations
+├── Structural algorithms: traversal, connectivity, degree, topological ordering, relation closure
 ├── Evidence: validation, deterministic fingerprints, repeatable tests
 ├── Interfaces: Rust library and command-line demonstration
 └── Research extensions: relations, hypergraphs, topology, inference,
@@ -106,7 +108,7 @@ A graph fingerprint is not a graph-isomorphism certificate. Equal fingerprints e
 
 Weak connectivity in a directed graph ignores edge direction. It does not establish strong connectivity. Topological ordering applies only to directed acyclic graphs. A cycle produces an explicit error.
 
-The project does not currently claim causal discovery, universal reconstruction, formal proof of all algorithms, or general optimization.
+The project does not currently claim causal discovery, universal reconstruction, graph or hypergraph isomorphism, formal proof of all algorithms, or general optimization.
 
 ## Repository map
 
