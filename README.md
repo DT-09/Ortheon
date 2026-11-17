@@ -39,7 +39,7 @@ The executable kernel now includes three distinct finite structural models: grap
 | CLI | Implemented | Reproducible demonstration and graph inspection |
 | Formal proofs | Planned | Coq specifications and verified core properties |
 | Hypergraphs and algebraic structures | Planned | Domain-specific representations |
-| Reconstruction | Implemented baseline | Adjacency-matrix reconstruction and induced subgraphs |\n| Structural inference | Implemented heuristic | Missing-edge candidates ranked by common-neighbor count; not causal inference |\n| Optimization | Implemented baseline | Kruskal minimum spanning forest for caller-supplied nonnegative integer weights |\n| Dynamics | Research direction | Not yet implemented |
+| Reconstruction | Implemented baseline | Adjacency-matrix reconstruction and induced subgraphs |\n| Structural inference | Implemented heuristic | Missing-edge candidates ranked by common-neighbor count; not causal inference |\n| Optimization | Implemented baseline | Kruskal minimum spanning forest and Dijkstra shortest paths for caller-supplied nonnegative integer weights |\n| Dynamics | Research direction | Not yet implemented |
 | Python, WebAssembly and Explorer | Planned | Interfaces after API stabilization |
 
 ## Quick start
@@ -52,7 +52,7 @@ cd Ortheon
 cargo test --workspace
 cargo run -p ortheon-cli -- demo
 cargo run -p ortheon-cli -- inspect
-cargo run -p ortheon-cli -- analyze data/edges.txt undirected
+cargo run -p ortheon-cli -- analyze examples/edges.txt undirected
 ~~~
 
 Use the library:
@@ -96,7 +96,7 @@ The core library has no dependency on the CLI or visualization. The CLI consumes
 | Add node / edge | O(log V) / O(log E) | Ordered maps and sets |
 | Validate | O(V + E) | Checks stored endpoints |
 | Fingerprint | O(V log V + E log E) | Canonical ordered encoding |
-| Reachability (Graph method) | O(VE) | Baseline scan implementation |\n| Shortest path | O(V + E) | Adjacency-indexed breadth-first search |\n| Components / SCC / bipartition | O(V + E) | Adjacency-indexed traversal |\n| Minimum spanning forest | O(E log E + V α(V)) | Kruskal with disjoint-set union |
+| Reachability (Graph method) | O(VE) | Baseline scan implementation |\n| Shortest path | O(V + E) | Adjacency-indexed breadth-first search |\n| Weighted shortest path | O((V + E) log V) | Dijkstra with caller-supplied nonnegative integer edge weights |\n| Components / SCC / bipartition | O(V + E) | Adjacency-indexed traversal |\n| Minimum spanning forest | O(E log E + V α(V)) | Kruskal with disjoint-set union |
 | Components | O(VE) | Baseline scans edges per visited vertex |
 | Degree statistics | O(V + E) | Directed in/out or undirected degree |
 | Topological order | O((V + E) log V) | Directed acyclic graphs only |
@@ -116,7 +116,7 @@ The project does not currently claim causal discovery, universal reconstruction,
 ## Repository map
 
 - crates/ortheon-core — structural data model and algorithms.
-- crates/ortheon-cli — command-line demonstration.
+- crates/ortheon-cli — command-line demonstration and edge-list analysis.\n- examples/edges.txt — sample input for the analysis command.\n- formal/RelationAlgebra.v — abstract relation-algebra proofs in Coq.
 - docs/architecture.md — architecture and dependency boundaries.
 - docs/research-agenda.md — research programme and open questions.
 - docs/verification.md — validation strategy.
