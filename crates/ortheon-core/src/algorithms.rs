@@ -215,6 +215,38 @@ pub fn induced_subgraph(graph: &Graph, vertices: impl IntoIterator<Item=NodeId>)
 mod tests {
     use super::*;
 
+
+    #[test]
+    fn strongly_connected_components_find_cycles_and_singletons() {
+        let mut graph = Graph::directed();
+        for id in 1..=6 { graph.add_node(id, "").unwrap(); }
+        for (a,b) in [(1,2),(2,1),(2,3),(3,4),(4,3),(4,5)] { graph.add_edge(a,b).unwrap(); }
+        assert_eq!(strongly_connected_components(&graph).unwrap(),
+            vec![vec![1,2], vec![3,4], vec![5], vec![6]]);
+    }
+
+    #[test]
+    fn bipartition_accepts_even_cycle_and_rejects_odd_cycle() {
+        let mut graph = Graph::undirected();
+        for id in 1..=4 { graph.add_node(id, "").unwrap(); }
+        for (a,b) in [(1,2),(2,3),(3,4),(4,1)] { graph.add_edge(a,b).unwrap(); }
+        assert!(bipartition(&graph).unwrap().is_some());
+        graph.add_edge(1,3).unwrap();
+        assert_eq!(bipartition(&graph).unwrap(), None);
+    }
+
+    #[test]
+    fn induced_subgraph_preserves_labels_and_internal_edges() {
+        let mut graph = Graph::directed();
+        graph.add_node(1, "one").unwrap(); graph.add_node(2, "two").unwrap();
+        graph.add_node(3, "three").unwrap();
+        graph.add_edge(1,2).unwrap(); graph.add_edge(2,3).unwrap();
+        let sub = induced_subgraph(&graph, [1,2]).unwrap();
+        assert_eq!((sub.node_count(), sub.edge_count()), (2,1));
+        assert_eq!(sub.nodes().map(|(id,label)| (id,label.to_string())).collect::<Vec<_>>(),
+            vec![(1,"one".into()),(2,"two".into())]);
+    }
+
     #[test]
     fn undirected_components_include_isolated_vertices() {
         let mut graph = Graph::undirected();
