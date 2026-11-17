@@ -27,3 +27,15 @@ jobs:
         run: cargo test --workspace
       - name: Run Clippy
         run: cargo clippy --workspace --all-targets -- -D warnings
+
+  formal:
+    name: Check Coq relation-algebra proofs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Coq
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y coq
+      - name: Compile formal proofs
+        run: coqc formal/RelationAlgebra.v
