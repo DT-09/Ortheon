@@ -173,8 +173,11 @@ pub fn strongly_connected_components(graph: &Graph) -> Result<Vec<Vec<NodeId>>, 
     Ok(result)
 }
 
+/// Two disjoint vertex sets forming a bipartition.
+pub type Bipartition = (Vec<NodeId>, Vec<NodeId>);
+
 /// Return a bipartition of an undirected graph, or None when it is not bipartite.
-pub fn bipartition(graph: &Graph) -> Result<Option<(Vec<NodeId>, Vec<NodeId>)>, GraphError> {
+pub fn bipartition(graph: &Graph) -> Result<Option<Bipartition>, GraphError> {
     if graph.is_directed() { return Err(GraphError::RequiresUndirectedGraph); }
     graph.validate()?;
     let mut adjacency: BTreeMap<NodeId, Vec<NodeId>> = graph.nodes().map(|(id,_)| (id,Vec::new())).collect();
