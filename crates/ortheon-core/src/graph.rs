@@ -157,23 +157,20 @@ impl Graph {
         if !self.nodes.contains_key(&start) {
             return Err(GraphError::UnknownNode(start));
         }
+        let mut adjacency: BTreeMap<NodeId, Vec<NodeId>> =
+            self.nodes.keys().map(|id| (*id, Vec::new())).collect();
+        for (from, to) in &self.edges {
+            adjacency.get_mut(from).expect("edge endpoint exists").push(*to);
+            if !self.directed && from != to {
+                adjacency.get_mut(to).expect("edge endpoint exists").push(*from);
+            }
+        }
         let mut seen = BTreeSet::from([start]);
         let mut queue = VecDeque::from([start]);
         while let Some(current) = queue.pop_front() {
-            for (from, to) in &self.edges {
-                let next = if self.directed {
-                    if *from == current { Some(*to) } else { None }
-                } else if *from == current {
-                    Some(*to)
-                } else if *to == current {
-                    Some(*from)
-                } else {
-                    None
-                };
-                if let Some(next) = next {
-                    if seen.insert(next) {
-                        queue.push_back(next);
-                    }
+            for &next in &adjacency[&current] {
+                if seen.insert(next) {
+                    queue.push_back(next);
                 }
             }
         }
