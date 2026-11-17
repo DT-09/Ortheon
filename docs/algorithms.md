@@ -56,3 +56,25 @@ The relation type does not assume that its input is an order, equivalence relati
 ## Complexity notation
 
 V is the number of graph or hypergraph vertices, E the number of graph edges, I the number of hypergraph incidences, and n the size of a finite relation's carrier. Complexity statements describe the current implementation, not benchmark results.
+
+
+## Strongly connected components
+
+Directed strongly connected components use iterative Kosaraju traversal. The implementation avoids recursive call-stack growth and returns deterministically sorted components. Complexity is O(V + E).
+
+## Bipartition
+
+Undirected bipartition uses breadth-first two-coloring. Odd cycles and self-loops are rejected by returning no partition. Isolated vertices are retained. Complexity is O(V + E).
+
+## Induced subgraphs and complements
+
+An induced subgraph retains selected vertices, their labels, directedness and every edge internal to the selected set. Unknown vertex identifiers are errors. The simple-graph complement is defined for undirected graphs and excludes self-loops.
+
+## Reconstruction and local inference
+
+Adjacency-matrix reconstruction requires a square matrix; undirected matrices must be symmetric. Vertex IDs are matrix indices. Common-neighbor inference ranks absent undirected edges by shared-neighbor count. This is a transparent structural heuristic, not causal discovery or a calibrated probability.
+
+## Minimum spanning forest
+
+Kruskal's algorithm consumes a caller-supplied map of canonical endpoint pairs to nonnegative integer weights. Missing edge weights are errors. Disconnected inputs produce a minimum spanning forest. Complexity is O(E log E + V α(V)).
+
