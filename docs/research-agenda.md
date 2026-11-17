@@ -22,3 +22,8 @@ Begin with the graph model, its invariants and selected algorithms. Proofs must 
 
 ## Research discipline
 Every proposed result requires a precise problem statement, definitions and assumptions, related work, reproducible methods where relevant, counterexamples, limitations and evidence for independent review.
+
+
+## Implemented finite-kernel increment (2026-11-17)
+
+The executable baseline now includes unweighted shortest paths by breadth-first search, finite relation domain and range, inverse and composition, additional relation predicates, and distinct transitive versus reflexive-transitive closure operations. These additions deepen the graph and relation substrate; they do not resolve the open research questions above.
