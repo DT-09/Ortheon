@@ -1,6 +1,6 @@
 //! Command-line interface for running deterministic ORTHEON demonstrations.
 
-use ortheon_core::{Graph, degree_stats, weak_components};
+use ortheon_core::{Graph, degree_stats, shortest_path, weak_components};
 use std::error::Error;
 
 fn main() -> Result<(), Box<dyn Error>> {
@@ -40,6 +40,7 @@ fn demo() -> Result<(), Box<dyn Error>> {
     println!("fingerprint (SHA-256): {}", graph.fingerprint());
     println!("topological order: {:?}", graph.topological_order()?);
     println!("reachable from 10:   {:?}", graph.reachable_from(10)?);
+    println!("shortest path 10→40: {:?}", shortest_path(&graph, 10, 40)?);
     println!("weak components:    {:?}", weak_components(&graph)?);
     println!("degree statistics:  {:?}", degree_stats(&graph));
     Ok(())
