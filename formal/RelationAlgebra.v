@@ -36,7 +36,7 @@ Section RelationAlgebra.
   Proof.
     intros R x y. unfold compose, identity. split.
     - intros [w [Hxy Hwr]]. subst. exact Hwr.
-    - intro H. exists x. split; assumption.
+    - intro H. exists x. split; [reflexivity | assumption].
   Qed.
 
   Lemma compose_identity_right : forall R x y,
@@ -44,7 +44,7 @@ Section RelationAlgebra.
   Proof.
     intros R x y. unfold compose, identity. split.
     - intros [w [Hxw Hwy]]. subst. exact Hxw.
-    - intro H. exists y. split; assumption.
+    - intro H. exists y. split; [assumption | reflexivity].
   Qed.
 
   Lemma inverse_of_inverse_is_original : forall R,
