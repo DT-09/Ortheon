@@ -501,6 +501,17 @@ mod tests {
         assert!(minimum_spanning_forest(&graph,&BTreeMap::new()).is_err());
     }
 
+
+    #[test]
+    fn dijkstra_selects_minimum_total_weight_path() {
+        let mut graph = Graph::directed();
+        for id in 1..=4 { graph.add_node(id, "").unwrap(); }
+        for (a,b) in [(1,2),(2,4),(1,3),(3,4)] { graph.add_edge(a,b).unwrap(); }
+        let weights = BTreeMap::from([((1,2),8),((2,4),8),((1,3),2),((3,4),3)]);
+        assert_eq!(shortest_weighted_path(&graph,1,4,&weights).unwrap(),
+            Some((vec![1,3,4],5)));
+    }
+
     #[test]
     fn undirected_components_include_isolated_vertices() {
         let mut graph = Graph::undirected();
