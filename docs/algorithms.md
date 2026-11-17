@@ -6,11 +6,11 @@ Finite labeled directed and undirected graphs use stable unsigned 64-bit vertex 
 
 ### Reachability
 
-Breadth-first traversal from a supplied vertex. Directed graphs follow outgoing edges; undirected graphs traverse either endpoint. Results include the start vertex and are sorted by identifier. The current edge-set scan implementation is O(VE) worst case.
+Breadth-first traversal from a supplied vertex. Directed graphs follow outgoing edges; undirected graphs traverse either endpoint. Results include the start vertex and are sorted by identifier. Adjacency-indexed breadth-first traversal is O(V + E).
 
 ### Components
 
-Undirected connected components and directed weakly connected components are computed by breadth-first traversal. Weak components ignore edge direction. Strongly connected components are not currently implemented. The current edge-set scan implementation is O(VE) worst case.
+Undirected connected components and directed weakly connected components are computed by breadth-first traversal. Weak components ignore edge direction. Strongly connected components are not currently implemented. Adjacency-indexed breadth-first traversal is O(V + E).
 
 ### Degree statistics
 
