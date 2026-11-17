@@ -11,7 +11,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         "analyze" => analyze_file(),
         "help" | "--help" | "-h" => {
             println!(
-                "ORTHEON — universal structural computation\n\nUSAGE:\n  ortheon-cli [demo|inspect|analyze <edge-list.txt> [directed|undirected]|help]\n\nCOMMANDS:\n  demo     Run a deterministic structural analysis example\n  inspect  Print the example graph's structural summary"
+                "ORTHEON — universal structural computation\n\nUSAGE:\n  ortheon-cli [demo|inspect|analyze <edge-list.txt> [directed|undirected]|help]\n\nCOMMANDS:\n  demo     Run a deterministic structural analysis example\n  inspect  Print the example graph's structural summary\n  analyze  Analyze a user-provided edge-list file"
             );
             Ok(())
         }
