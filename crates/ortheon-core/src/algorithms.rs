@@ -404,6 +404,47 @@ mod tests {
             vec![(1,"one".into()),(2,"two".into())]);
     }
 
+
+    #[test]
+    fn adjacency_matrix_reconstructs_graph_and_rejects_invalid_shapes() {
+        let graph = from_adjacency_matrix(&[vec![false,true],vec![true,false]], false).unwrap();
+        assert_eq!((graph.node_count(),graph.edge_count()),(2,1));
+        assert!(from_adjacency_matrix(&[vec![false,true],vec![false]],true).is_err());
+        assert!(from_adjacency_matrix(&[vec![false,true],vec![false,false]],false).is_err());
+    }
+
+    #[test]
+    fn complement_contains_exactly_missing_simple_edges() {
+        let mut graph = Graph::undirected();
+        for id in 1..=3 { graph.add_node(id,"").unwrap(); }
+        graph.add_edge(1,2).unwrap();
+        let inverse = complement(&graph).unwrap();
+        assert_eq!(inverse.edge_count(),2);
+        assert!(inverse.edges().any(|e| e.from==1 && e.to==3));
+        assert!(inverse.edges().any(|e| e.from==2 && e.to==3));
+    }
+
+    #[test]
+    fn common_neighbor_inference_ranks_triangle_closure() {
+        let mut graph = Graph::undirected();
+        for id in 1..=3 { graph.add_node(id,"").unwrap(); }
+        graph.add_edge(1,2).unwrap(); graph.add_edge(2,3).unwrap();
+        assert_eq!(infer_missing_edges(&graph,1).unwrap(),
+            vec![InferredEdge{from:1,to:3,common_neighbors:1}]);
+    }
+
+    #[test]
+    fn kruskal_returns_minimum_spanning_forest() {
+        let mut graph = Graph::undirected();
+        for id in 1..=4 { graph.add_node(id,"").unwrap(); }
+        for (a,b) in [(1,2),(2,3),(1,3)] { graph.add_edge(a,b).unwrap(); }
+        let weights = BTreeMap::from([((1,2),4),((2,3),2),((1,3),9)]);
+        let forest = minimum_spanning_forest(&graph,&weights).unwrap();
+        assert_eq!(forest.total_weight,6);
+        assert_eq!(forest.edges.len(),2);
+        assert!(minimum_spanning_forest(&graph,&BTreeMap::new()).is_err());
+    }
+
     #[test]
     fn undirected_components_include_isolated_vertices() {
         let mut graph = Graph::undirected();
