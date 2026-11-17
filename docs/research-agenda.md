@@ -27,3 +27,8 @@ Every proposed result requires a precise problem statement, definitions and assu
 ## Implemented finite-kernel increment (2026-11-17)
 
 The executable baseline now includes unweighted shortest paths by breadth-first search, finite relation domain and range, inverse and composition, additional relation predicates, and distinct transitive versus reflexive-transitive closure operations. These additions deepen the graph and relation substrate; they do not resolve the open research questions above.
+
+
+## Implemented research increment (2026-11-17, continued)
+
+The graph kernel now includes iterative strongly connected components, undirected bipartition, induced-subgraph extraction, adjacency-matrix reconstruction, simple-graph complement, common-neighbor missing-edge ranking, and minimum spanning forests using Kruskal's algorithm. Abstract relation-algebra lemmas are specified in Coq under `formal/RelationAlgebra.v`. These proofs concern the abstract relational definitions; they do not yet prove refinement of the Rust implementation.
