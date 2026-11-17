@@ -120,6 +120,97 @@ fn component_walk(graph: &Graph) -> Result<Vec<Vec<NodeId>>, GraphError> {
     Ok(result)
 }
 
+
+/// Compute strongly connected components of a directed graph with Kosaraju's algorithm.
+pub fn strongly_connected_components(graph: &Graph) -> Result<Vec<Vec<NodeId>>, GraphError> {
+    if !graph.is_directed() { return Err(GraphError::RequiresDirectedGraph); }
+    graph.validate()?;
+    let mut forward: BTreeMap<NodeId, Vec<NodeId>> = graph.nodes().map(|(id,_)| (id,Vec::new())).collect();
+    let mut reverse = forward.clone();
+    for edge in graph.edges() {
+        forward.get_mut(&edge.from).expect("known endpoint").push(edge.to);
+        reverse.get_mut(&edge.to).expect("known endpoint").push(edge.from);
+    }
+    let mut visited = BTreeSet::new();
+    let mut finish = Vec::new();
+    for &start in forward.keys() {
+        if visited.contains(&start) { continue; }
+        let mut stack = vec![(start, false)];
+        while let Some((node, exiting)) = stack.pop() {
+            if exiting { finish.push(node); continue; }
+            if !visited.insert(node) { continue; }
+            stack.push((node, true));
+            for &next in forward[&node].iter().rev() {
+                if !visited.contains(&next) { stack.push((next, false)); }
+            }
+        }
+    }
+    visited.clear();
+    let mut result = Vec::new();
+    for start in finish.into_iter().rev() {
+        if !visited.insert(start) { continue; }
+        let mut component = BTreeSet::from([start]);
+        let mut stack = vec![start];
+        while let Some(node) = stack.pop() {
+            for &next in reverse[&node].iter().rev() {
+                if visited.insert(next) { component.insert(next); stack.push(next); }
+            }
+        }
+        result.push(component.into_iter().collect());
+    }
+    result.sort();
+    Ok(result)
+}
+
+/// Return a bipartition of an undirected graph, or None when it is not bipartite.
+pub fn bipartition(graph: &Graph) -> Result<Option<(Vec<NodeId>, Vec<NodeId>)>, GraphError> {
+    if graph.is_directed() { return Err(GraphError::RequiresUndirectedGraph); }
+    graph.validate()?;
+    let mut adjacency: BTreeMap<NodeId, Vec<NodeId>> = graph.nodes().map(|(id,_)| (id,Vec::new())).collect();
+    for edge in graph.edges() {
+        adjacency.get_mut(&edge.from).expect("known endpoint").push(edge.to);
+        if edge.from != edge.to { adjacency.get_mut(&edge.to).expect("known endpoint").push(edge.from); }
+    }
+    let mut colors = BTreeMap::new();
+    for &start in adjacency.keys() {
+        if colors.contains_key(&start) { continue; }
+        colors.insert(start, false);
+        let mut queue = VecDeque::from([start]);
+        while let Some(node) = queue.pop_front() {
+            let color = colors[&node];
+            for &next in &adjacency[&node] {
+                match colors.get(&next) {
+                    Some(&other) if other == color => return Ok(None),
+                    Some(_) => {},
+                    None => { colors.insert(next, !color); queue.push_back(next); }
+                }
+            }
+        }
+    }
+    let mut left = Vec::new();
+    let mut right = Vec::new();
+    for (node, color) in colors { if color { right.push(node); } else { left.push(node); } }
+    Ok(Some((left, right)))
+}
+
+/// Construct the vertex-induced subgraph on the supplied vertex identifiers.
+pub fn induced_subgraph(graph: &Graph, vertices: impl IntoIterator<Item=NodeId>) -> Result<Graph, GraphError> {
+    graph.validate()?;
+    let selected: BTreeSet<NodeId> = vertices.into_iter().collect();
+    let labels: BTreeMap<NodeId, &str> = graph.nodes().collect();
+    for &node in &selected {
+        if !labels.contains_key(&node) { return Err(GraphError::UnknownNode(node)); }
+    }
+    let mut result = if graph.is_directed() { Graph::directed() } else { Graph::undirected() };
+    for &node in &selected { result.add_node(node, labels[&node])?; }
+    for edge in graph.edges() {
+        if selected.contains(&edge.from) && selected.contains(&edge.to) {
+            result.add_edge(edge.from, edge.to)?;
+        }
+    }
+    Ok(result)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
