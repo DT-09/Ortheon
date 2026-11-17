@@ -61,3 +61,8 @@ Future algebraic structures must retain their operations and axioms. Temporal st
 - Transitive closure and reflexive-transitive closure are separate operations. The former does not add identity pairs except where a non-empty cycle implies them.
 
 These are deterministic reference implementations. They are not yet formally verified or benchmark-optimized.
+
+
+## Structural analysis, reconstruction and optimization
+
+The finite graph layer now exposes strongly connected components, bipartition, induced subgraphs, adjacency-matrix reconstruction, simple-graph complement, common-neighbor candidate inference, and Kruskal minimum spanning forests. These are explicit algorithms with narrow semantics; they do not imply universal structural inference or causal discovery.
