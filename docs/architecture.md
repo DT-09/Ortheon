@@ -51,3 +51,13 @@ The core must not depend on the CLI, UI, network services or research notebooks.
 ## Extension boundaries
 
 Future algebraic structures must retain their operations and axioms. Temporal structures must model time explicitly. Common traits should be introduced only when multiple implementations demonstrate a stable shared contract.
+
+
+## Algorithms added to the finite kernel
+
+- Breadth-first shortest path returns a minimum-edge path, follows direction for directed graphs, and returns `None` when no path exists.
+- Finite relation composition is defined only for identical carrier sets.
+- Relation predicates include reflexivity, irreflexivity, symmetry, antisymmetry, asymmetry, transitivity, equivalence-relation recognition and partial-order recognition.
+- Transitive closure and reflexive-transitive closure are separate operations. The former does not add identity pairs except where a non-empty cycle implies them.
+
+These are deterministic reference implementations. They are not yet formally verified or benchmark-optimized.
