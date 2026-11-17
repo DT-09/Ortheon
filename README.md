@@ -29,10 +29,10 @@ The executable kernel now includes three distinct finite structural models: grap
 |---|---|---|
 | Graph representation | Implemented | Directed and undirected labeled graphs |
 | Hypergraph representation | Implemented | Native n-ary hyperedges and incidence validation |
-| Finite relations | Implemented | Explicit carrier sets, relation properties, inverse and reflexive transitive closure |
+| Finite relations | Implemented | Carrier validation, domain/range, inverse, composition, relation properties, transitive and reflexive-transitive closure |
 | Validation | Implemented | Endpoint, identity and representation invariants |
 | Fingerprinting | Implemented | SHA-256 fingerprint of canonical graph encoding |
-| Traversal | Implemented | Deterministic reachability |
+| Traversal | Implemented | Deterministic reachability and unweighted shortest paths |
 | Connectivity | Implemented | Graph components, weak graph components and hypergraph components |
 | Topology | Implemented | Degree statistics and directed topological ordering |
 | Cycle handling | Implemented | Cycle detection through Kahn's algorithm |
@@ -95,10 +95,12 @@ The core library has no dependency on the CLI or visualization. The CLI consumes
 | Add node / edge | O(log V) / O(log E) | Ordered maps and sets |
 | Validate | O(V + E) | Checks stored endpoints |
 | Fingerprint | O(V log V + E log E) | Canonical ordered encoding |
-| Reachability | O(VE) | Baseline scans edges per visited vertex |
+| Reachability / shortest path | O(VE) | Deterministic breadth-first search scans edges per visited vertex |
 | Components | O(VE) | Baseline scans edges per visited vertex |
 | Degree statistics | O(V + E) | Directed in/out or undirected degree |
 | Topological order | O((V + E) log V) | Directed acyclic graphs only |
+| Relation composition | O(|R| × |S|) | Baseline pair matching over finite relations |
+| Relation closure | O(n³) | Warshall algorithm over an n-element carrier |
 
 V is the number of vertices and E the number of edges. These are complexity expectations, not benchmark claims.
 
