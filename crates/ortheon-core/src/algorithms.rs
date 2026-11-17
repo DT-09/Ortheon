@@ -135,13 +135,23 @@ pub fn strongly_connected_components(graph: &Graph) -> Result<Vec<Vec<NodeId>>, 
     let mut finish = Vec::new();
     for &start in forward.keys() {
         if visited.contains(&start) { continue; }
-        let mut stack = vec![(start, false)];
-        while let Some((node, exiting)) = stack.pop() {
-            if exiting { finish.push(node); continue; }
-            if !visited.insert(node) { continue; }
-            stack.push((node, true));
-            for &next in forward[&node].iter().rev() {
-                if !visited.contains(&next) { stack.push((next, false)); }
+        visited.insert(start);
+        let mut stack = vec![(start, 0_usize)];
+        while !stack.is_empty() {
+            let next = {
+                let (node, index) = stack.last_mut().expect("non-empty traversal stack");
+                if *index < forward[node].len() {
+                    let next = forward[node][*index];
+                    *index += 1;
+                    Some(next)
+                } else {
+                    None
+                }
+            };
+            if let Some(next) = next {
+                if visited.insert(next) { stack.push((next, 0)); }
+            } else {
+                finish.push(stack.pop().expect("non-empty traversal stack").0);
             }
         }
     }
