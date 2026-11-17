@@ -6,7 +6,7 @@ mod graph;
 mod hypergraph;
 mod relation;
 
-pub use algorithms::{DegreeStats, components, degree_stats, shortest_path, weak_components};
+pub use algorithms::{DegreeStats, bipartition, components, degree_stats, induced_subgraph, shortest_path, strongly_connected_components, weak_components};
 pub use error::GraphError;
 pub use graph::{Edge, Graph, NodeId};
 pub use hypergraph::{HyperedgeId, Hypergraph, HypergraphError};
