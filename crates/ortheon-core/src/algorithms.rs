@@ -371,6 +371,59 @@ pub fn minimum_spanning_forest(
     Ok(SpanningForest {edges:selected,total_weight})
 }
 
+
+/// Compute a minimum-weight path using Dijkstra's algorithm.
+///
+/// Directed weights use ordered (from, to) keys. Undirected weights use
+/// canonical (min, max) keys. Every traversed edge must have a weight.
+/// Zero weights are supported; negative weights are excluded by the u64 type.
+pub fn shortest_weighted_path(
+    graph: &Graph,
+    start: NodeId,
+    goal: NodeId,
+    weights: &BTreeMap<(NodeId, NodeId), u64>,
+) -> Result<Option<(Vec<NodeId>, u64)>, GraphError> {
+    use std::cmp::Reverse;
+    use std::collections::BinaryHeap;
+
+    let mut adjacency: BTreeMap<NodeId, Vec<(NodeId, u64)>> =
+        graph.nodes().map(|(id, _)| (id, Vec::new())).collect();
+    if !adjacency.contains_key(&start) { return Err(GraphError::UnknownNode(start)); }
+    if !adjacency.contains_key(&goal) { return Err(GraphError::UnknownNode(goal)); }
+    for edge in graph.edges() {
+        let key = if graph.is_directed() { (edge.from, edge.to) }
+            else { (edge.from.min(edge.to), edge.from.max(edge.to)) };
+        let weight = *weights.get(&key).ok_or_else(|| GraphError::InvalidRepresentation(
+            format!("missing weight for edge {}-{}", key.0, key.1)))?;
+        adjacency.get_mut(&edge.from).expect("known node").push((edge.to, weight));
+        if !graph.is_directed() && edge.from != edge.to {
+            adjacency.get_mut(&edge.to).expect("known node").push((edge.from, weight));
+        }
+    }
+    let mut distance = BTreeMap::from([(start, 0_u64)]);
+    let mut previous = BTreeMap::new();
+    let mut queue = BinaryHeap::from([Reverse((0_u64, start))]);
+    while let Some(Reverse((cost, node))) = queue.pop() {
+        if distance.get(&node) != Some(&cost) { continue; }
+        if node == goal { break; }
+        for &(next, weight) in &adjacency[&node] {
+            let candidate = cost.checked_add(weight).ok_or_else(|| GraphError::InvalidRepresentation(
+                "weighted path cost overflow".into()))?;
+            if distance.get(&next).is_none_or(|&known| candidate < known) {
+                distance.insert(next, candidate);
+                previous.insert(next, node);
+                queue.push(Reverse((candidate, next)));
+            }
+        }
+    }
+    let Some(&cost) = distance.get(&goal) else { return Ok(None); };
+    let mut path = vec![goal];
+    let mut current = goal;
+    while current != start { current = previous[&current]; path.push(current); }
+    path.reverse();
+    Ok(Some((path, cost)))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
