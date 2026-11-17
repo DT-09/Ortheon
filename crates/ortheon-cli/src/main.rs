@@ -8,9 +8,10 @@ fn main() -> Result<(), Box<dyn Error>> {
     match command.as_str() {
         "demo" => demo(),
         "inspect" => inspect(),
+        "analyze" => analyze_file(),
         "help" | "--help" | "-h" => {
             println!(
-                "ORTHEON — universal structural computation\n\nUSAGE:\n  ortheon-cli [demo|inspect|help]\n\nCOMMANDS:\n  demo     Run a deterministic structural analysis example\n  inspect  Print the example graph's structural summary"
+                "ORTHEON — universal structural computation\n\nUSAGE:\n  ortheon-cli [demo|inspect|analyze <edge-list.txt> [directed|undirected]|help]\n\nCOMMANDS:\n  demo     Run a deterministic structural analysis example\n  inspect  Print the example graph's structural summary"
             );
             Ok(())
         }
@@ -59,5 +60,53 @@ fn inspect() -> Result<(), Box<dyn Error>> {
         println!("  {} -> {}", edge.from, edge.to);
     }
     println!("fingerprint: {}", graph.fingerprint());
+    Ok(())
+}
+
+
+fn analyze_file() -> Result<(), Box<dyn Error>> {
+    use std::collections::BTreeSet;
+    use std::fs;
+
+    let mut args = std::env::args().skip(2);
+    let path = args.next().ok_or("usage: ortheon-cli analyze <edge-list.txt> [directed|undirected]")?;
+    let directed = match args.next().as_deref().unwrap_or("undirected") {
+        "directed" => true,
+        "undirected" => false,
+        _ => return Err("mode must be directed or undirected".into()),
+    };
+    let input = fs::read_to_string(&path)?;
+    let mut ids = BTreeSet::new();
+    let mut edges = Vec::new();
+    for (index, raw) in input.lines().enumerate() {
+        let line = raw.split('#').next().unwrap_or("").trim();
+        if line.is_empty() { continue; }
+        let fields: Vec<&str> = line.split_whitespace().collect();
+        if fields.len() != 2 {
+            return Err(format!("{}:{}: expected two vertex IDs", path, index + 1).into());
+        }
+        let from: u64 = fields[0].parse()?;
+        let to: u64 = fields[1].parse()?;
+        ids.insert(from);
+        ids.insert(to);
+        edges.push((from, to));
+    }
+    let mut graph = if directed { Graph::directed() } else { Graph::undirected() };
+    for id in ids { graph.add_node(id, id.to_string())?; }
+    for (from, to) in edges { graph.add_edge(from, to)?; }
+    graph.validate()?;
+    println!("vertices: {}", graph.node_count());
+    println!("edges: {}", graph.edge_count());
+    println!("fingerprint: {}", graph.fingerprint());
+    println!("degree statistics: {:?}", degree_stats(&graph));
+    if directed {
+        println!("weak components: {:?}", weak_components(&graph)?);
+        println!("strong components: {:?}", ortheon_core::strongly_connected_components(&graph)?);
+        println!("topological order: {:?}", graph.topological_order());
+    } else {
+        println!("components: {:?}", ortheon_core::components(&graph)?);
+        println!("bipartition: {:?}", ortheon_core::bipartition(&graph)?);
+        println!("inferred missing edges: {:?}", ortheon_core::infer_missing_edges(&graph, 1)?);
+    }
     Ok(())
 }
