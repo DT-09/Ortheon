@@ -52,6 +52,7 @@ cd Ortheon
 cargo test --workspace
 cargo run -p ortheon-cli -- demo
 cargo run -p ortheon-cli -- inspect
+cargo run -p ortheon-cli -- analyze data/edges.txt undirected
 ~~~
 
 Use the library:
@@ -81,7 +82,7 @@ ORTHEON
 ├── Mathematical substrate: graphs, n-ary hypergraphs, finite binary relations
 ├── Structural algorithms: traversal, connectivity, SCCs, bipartition, reconstruction, inference, spanning forests, relation closure
 ├── Evidence: validation, deterministic fingerprints, repeatable tests
-├── Interfaces: Rust library and command-line demonstration
+├── Interfaces: Rust library and CLI demo, inspection and edge-list analysis
 └── Research extensions: relations, hypergraphs, topology, inference,
     reconstruction, transformations, dynamics, optimization, formal methods
 ~~~
