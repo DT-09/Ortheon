@@ -299,9 +299,8 @@ pub fn complement(graph: &Graph) -> Result<Graph, GraphError> {
     if graph.is_directed() { return Err(GraphError::RequiresUndirectedGraph); }
     graph.validate()?;
     let mut result = Graph::undirected();
-    let ids: Vec<NodeId> = graph.nodes().map(|(id,label)| {
-        (id,label.to_owned())
-    }).map(|(id,label)| (id,label)).collect();
+    let ids: Vec<(NodeId, String)> =
+        graph.nodes().map(|(id, label)| (id, label.to_owned())).collect();
     for (id,label) in &ids { result.add_node(*id,label)?; }
     for i in 0..ids.len() {
         for j in i+1..ids.len() {
