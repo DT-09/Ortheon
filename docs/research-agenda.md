@@ -32,3 +32,8 @@ The executable baseline now includes unweighted shortest paths by breadth-first 
 ## Implemented research increment (2026-11-17, continued)
 
 The graph kernel now includes iterative strongly connected components, undirected bipartition, induced-subgraph extraction, adjacency-matrix reconstruction, simple-graph complement, common-neighbor missing-edge ranking, and minimum spanning forests using Kruskal's algorithm. Abstract relation-algebra lemmas are specified in Coq under `formal/RelationAlgebra.v`. These proofs concern the abstract relational definitions; they do not yet prove refinement of the Rust implementation.
+
+
+## Implemented weighted optimization increment
+
+The graph layer now includes Dijkstra minimum-cost paths for nonnegative integer weights, alongside Kruskal minimum spanning forests. Both algorithms require explicit edge-weight inputs and reject missing weights rather than inventing costs.
