@@ -33,13 +33,13 @@ The executable kernel now includes three distinct finite structural models: grap
 | Validation | Implemented | Endpoint, identity and representation invariants |
 | Fingerprinting | Implemented | SHA-256 fingerprint of canonical graph encoding |
 | Traversal | Implemented | Deterministic reachability and unweighted shortest paths |
-| Connectivity | Implemented | Graph components, weak graph components and hypergraph components |
-| Topology | Implemented | Degree statistics and directed topological ordering |
+| Connectivity | Implemented | Undirected components, directed weak components, directed strongly connected components, and hypergraph components |
+| Topology | Implemented | Degree statistics, topological ordering, bipartition testing and graph complement |
 | Cycle handling | Implemented | Cycle detection through Kahn's algorithm |
 | CLI | Implemented | Reproducible demonstration and graph inspection |
 | Formal proofs | Planned | Coq specifications and verified core properties |
 | Hypergraphs and algebraic structures | Planned | Domain-specific representations |
-| Reconstruction, inference, dynamics and optimization | Research direction | Not yet implemented |
+| Reconstruction | Implemented baseline | Adjacency-matrix reconstruction and induced subgraphs |\n| Structural inference | Implemented heuristic | Missing-edge candidates ranked by common-neighbor count; not causal inference |\n| Optimization | Implemented baseline | Kruskal minimum spanning forest for caller-supplied nonnegative integer weights |\n| Dynamics | Research direction | Not yet implemented |
 | Python, WebAssembly and Explorer | Planned | Interfaces after API stabilization |
 
 ## Quick start
@@ -79,7 +79,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 ~~~text
 ORTHEON
 ├── Mathematical substrate: graphs, n-ary hypergraphs, finite binary relations
-├── Structural algorithms: traversal, connectivity, degree, topological ordering, relation closure
+├── Structural algorithms: traversal, connectivity, SCCs, bipartition, reconstruction, inference, spanning forests, relation closure
 ├── Evidence: validation, deterministic fingerprints, repeatable tests
 ├── Interfaces: Rust library and command-line demonstration
 └── Research extensions: relations, hypergraphs, topology, inference,
@@ -95,12 +95,12 @@ The core library has no dependency on the CLI or visualization. The CLI consumes
 | Add node / edge | O(log V) / O(log E) | Ordered maps and sets |
 | Validate | O(V + E) | Checks stored endpoints |
 | Fingerprint | O(V log V + E log E) | Canonical ordered encoding |
-| Reachability / shortest path | O(VE) | Deterministic breadth-first search scans edges per visited vertex |
+| Reachability (Graph method) | O(VE) | Baseline scan implementation |\n| Shortest path | O(V + E) | Adjacency-indexed breadth-first search |\n| Components / SCC / bipartition | O(V + E) | Adjacency-indexed traversal |\n| Minimum spanning forest | O(E log E + V α(V)) | Kruskal with disjoint-set union |
 | Components | O(VE) | Baseline scans edges per visited vertex |
 | Degree statistics | O(V + E) | Directed in/out or undirected degree |
 | Topological order | O((V + E) log V) | Directed acyclic graphs only |
 | Relation composition | O(|R| × |S|) | Baseline pair matching over finite relations |
-| Relation closure | O(n³) | Warshall algorithm over an n-element carrier |
+| Relation closure | O(n³) | Warshall algorithm over an n-element carrier |\n| Common-neighbor inference | O(V² log V + E) | Deterministic local structural heuristic |
 
 V is the number of vertices and E the number of edges. These are complexity expectations, not benchmark claims.
 
@@ -110,7 +110,7 @@ A graph fingerprint is not a graph-isomorphism certificate. Equal fingerprints e
 
 Weak connectivity in a directed graph ignores edge direction. It does not establish strong connectivity. Topological ordering applies only to directed acyclic graphs. A cycle produces an explicit error.
 
-The project does not currently claim causal discovery, universal reconstruction, graph or hypergraph isomorphism, formal proof of all algorithms, or general optimization.
+The project does not currently claim causal discovery, universal reconstruction, graph or hypergraph isomorphism, formal proof of the Rust implementation, weighted shortest paths, or general-purpose optimization.
 
 ## Repository map
 
