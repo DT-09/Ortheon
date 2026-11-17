@@ -49,37 +49,32 @@ pub fn degree_stats(graph: &Graph) -> DegreeStats {
 /// Directed graphs follow edge direction; undirected graphs traverse either
 /// endpoint. Returns None when the target is unreachable.
 pub fn shortest_path(graph: &Graph, start: NodeId, goal: NodeId) -> Result<Option<Vec<NodeId>>, GraphError> {
-    let known: BTreeSet<NodeId> = graph.nodes().map(|(id, _)| id).collect();
-    if !known.contains(&start) { return Err(GraphError::UnknownNode(start)); }
-    if !known.contains(&goal) { return Err(GraphError::UnknownNode(goal)); }
+    let mut adjacency: BTreeMap<NodeId, Vec<NodeId>> =
+        graph.nodes().map(|(id,_)| (id,Vec::new())).collect();
+    for edge in graph.edges() {
+        adjacency.get_mut(&edge.from).expect("known endpoint").push(edge.to);
+        if !graph.is_directed() && edge.from != edge.to {
+            adjacency.get_mut(&edge.to).expect("known endpoint").push(edge.from);
+        }
+    }
+    if !adjacency.contains_key(&start) { return Err(GraphError::UnknownNode(start)); }
+    if !adjacency.contains_key(&goal) { return Err(GraphError::UnknownNode(goal)); }
     let mut predecessor = BTreeMap::new();
     let mut seen = BTreeSet::from([start]);
     let mut queue = VecDeque::from([start]);
     while let Some(current) = queue.pop_front() {
         if current == goal { break; }
-        for edge in graph.edges() {
-            let next = if graph.is_directed() {
-                (edge.from == current).then_some(edge.to)
-            } else if edge.from == current {
-                Some(edge.to)
-            } else if edge.to == current {
-                Some(edge.from)
-            } else { None };
-            if let Some(next) = next {
-                if seen.insert(next) {
-                    predecessor.insert(next, current);
-                    queue.push_back(next);
-                }
+        for &next in &adjacency[&current] {
+            if seen.insert(next) {
+                predecessor.insert(next,current);
+                queue.push_back(next);
             }
         }
     }
     if !seen.contains(&goal) { return Ok(None); }
     let mut path = vec![goal];
     let mut current = goal;
-    while current != start {
-        current = predecessor[&current];
-        path.push(current);
-    }
+    while current != start { current = predecessor[&current]; path.push(current); }
     path.reverse();
     Ok(Some(path))
 }
@@ -101,17 +96,24 @@ pub fn weak_components(graph: &Graph) -> Result<Vec<Vec<NodeId>>, GraphError> {
 
 fn component_walk(graph: &Graph) -> Result<Vec<Vec<NodeId>>, GraphError> {
     graph.validate()?;
-    let mut unseen: BTreeSet<NodeId> = graph.nodes().map(|(id, _)| id).collect();
+    let mut adjacency: BTreeMap<NodeId, Vec<NodeId>> =
+        graph.nodes().map(|(id,_)| (id,Vec::new())).collect();
+    for edge in graph.edges() {
+        adjacency.get_mut(&edge.from).expect("known endpoint").push(edge.to);
+        if edge.from != edge.to {
+            adjacency.get_mut(&edge.to).expect("known endpoint").push(edge.from);
+        }
+    }
+    let mut unseen: BTreeSet<NodeId> = adjacency.keys().copied().collect();
     let mut result = Vec::new();
     while let Some(start) = unseen.pop_first() {
         let mut component = BTreeSet::from([start]);
         let mut queue = VecDeque::from([start]);
         while let Some(current) = queue.pop_front() {
-            for edge in graph.edges() {
-                let next = if edge.from == current { Some(edge.to) }
-                    else if edge.to == current { Some(edge.from) } else { None };
-                if let Some(next) = next {
-                    if unseen.remove(&next) { component.insert(next); queue.push_back(next); }
+            for &next in &adjacency[&current] {
+                if unseen.remove(&next) {
+                    component.insert(next);
+                    queue.push_back(next);
                 }
             }
         }
@@ -119,7 +121,6 @@ fn component_walk(graph: &Graph) -> Result<Vec<Vec<NodeId>>, GraphError> {
     }
     Ok(result)
 }
-
 
 /// Compute strongly connected components of a directed graph with Kosaraju's algorithm.
 pub fn strongly_connected_components(graph: &Graph) -> Result<Vec<Vec<NodeId>>, GraphError> {
