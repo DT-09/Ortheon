@@ -37,8 +37,8 @@ The executable kernel now includes three distinct finite structural models: grap
 | Topology | Implemented | Degree statistics, topological ordering, bipartition testing and graph complement |
 | Cycle handling | Implemented | Cycle detection through Kahn's algorithm |
 | CLI | Implemented | Reproducible demonstration and graph inspection |
-| Formal proofs | Planned | Coq specifications and verified core properties |
-| Hypergraphs and algebraic structures | Planned | Domain-specific representations |
+| Formal proofs | Partial | Coq proofs for abstract relation algebra; Rust implementation refinement is not yet proved |
+| Hypergraphs and algebraic structures | Implemented baseline | Native hypergraphs and finite binary relations |
 | Reconstruction | Implemented baseline | Adjacency-matrix reconstruction and induced subgraphs |\n| Structural inference | Implemented heuristic | Missing-edge candidates ranked by common-neighbor count; not causal inference |\n| Optimization | Implemented baseline | Kruskal minimum spanning forest and Dijkstra shortest paths for caller-supplied nonnegative integer weights |\n| Dynamics | Research direction | Not yet implemented |
 | Python, WebAssembly and Explorer | Planned | Interfaces after API stabilization |
 
