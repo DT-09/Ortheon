@@ -78,3 +78,8 @@ Adjacency-matrix reconstruction requires a square matrix; undirected matrices mu
 
 Kruskal's algorithm consumes a caller-supplied map of canonical endpoint pairs to nonnegative integer weights. Missing edge weights are errors. Disconnected inputs produce a minimum spanning forest. Complexity is O(E log E + V α(V)).
 
+
+
+## Weighted shortest paths
+
+Dijkstra's algorithm computes a minimum-cost path for caller-supplied nonnegative integer edge weights. Directed graphs use ordered endpoint keys; undirected graphs use canonical endpoint keys. Missing weights and arithmetic overflow are explicit errors. Complexity is O((V + E) log V) with the ordered priority queue.
