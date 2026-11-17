@@ -221,6 +221,153 @@ pub fn induced_subgraph(graph: &Graph, vertices: impl IntoIterator<Item=NodeId>)
     Ok(result)
 }
 
+
+/// Candidate edge inferred from local common-neighbor evidence.
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
+pub struct InferredEdge {
+    /// First endpoint (always smaller than second).
+    pub from: NodeId,
+    /// Second endpoint.
+    pub to: NodeId,
+    /// Number of shared neighbors supporting the candidate.
+    pub common_neighbors: usize,
+}
+
+/// Infer absent undirected edges supported by at least the requested number of common neighbors.
+///
+/// This is a structural heuristic, not a causal or probabilistic claim.
+pub fn infer_missing_edges(graph: &Graph, minimum_common_neighbors: usize) -> Result<Vec<InferredEdge>, GraphError> {
+    if graph.is_directed() { return Err(GraphError::RequiresUndirectedGraph); }
+    graph.validate()?;
+    let mut neighbors: BTreeMap<NodeId, BTreeSet<NodeId>> =
+        graph.nodes().map(|(id,_)| (id,BTreeSet::new())).collect();
+    for edge in graph.edges() {
+        if edge.from != edge.to {
+            neighbors.get_mut(&edge.from).expect("known node").insert(edge.to);
+            neighbors.get_mut(&edge.to).expect("known node").insert(edge.from);
+        }
+    }
+    let ids: Vec<NodeId> = neighbors.keys().copied().collect();
+    let mut candidates = Vec::new();
+    for i in 0..ids.len() {
+        for j in i+1..ids.len() {
+            let a = ids[i];
+            let b = ids[j];
+            if neighbors[&a].contains(&b) { continue; }
+            let count = neighbors[&a].intersection(&neighbors[&b]).count();
+            if count >= minimum_common_neighbors {
+                candidates.push(InferredEdge { from:a, to:b, common_neighbors:count });
+            }
+        }
+    }
+    candidates.sort_by(|a,b| b.common_neighbors.cmp(&a.common_neighbors)
+        .then_with(|| a.from.cmp(&b.from)).then_with(|| a.to.cmp(&b.to)));
+    Ok(candidates)
+}
+
+/// Reconstruct a graph from a square adjacency matrix.
+///
+/// Vertex identifiers are matrix indices and labels are their decimal forms.
+/// Undirected matrices must be symmetric. Diagonal true entries create self-loops.
+pub fn from_adjacency_matrix(matrix: &[Vec<bool>], directed: bool) -> Result<Graph, GraphError> {
+    let n = matrix.len();
+    if matrix.iter().any(|row| row.len() != n) {
+        return Err(GraphError::InvalidRepresentation("adjacency matrix must be square".into()));
+    }
+    if !directed {
+        for i in 0..n {
+            for j in 0..n {
+                if matrix[i][j] != matrix[j][i] {
+                    return Err(GraphError::InvalidRepresentation("undirected adjacency matrix must be symmetric".into()));
+                }
+            }
+        }
+    }
+    let mut graph = if directed { Graph::directed() } else { Graph::undirected() };
+    for id in 0..n { graph.add_node(id as NodeId, id.to_string())?; }
+    for (i,row) in matrix.iter().enumerate() {
+        for (j,&present) in row.iter().enumerate() {
+            if present && (directed || i <= j) { graph.add_edge(i as NodeId,j as NodeId)?; }
+        }
+    }
+    Ok(graph)
+}
+
+/// Return the simple-graph complement of an undirected graph.
+pub fn complement(graph: &Graph) -> Result<Graph, GraphError> {
+    if graph.is_directed() { return Err(GraphError::RequiresUndirectedGraph); }
+    graph.validate()?;
+    let mut result = Graph::undirected();
+    let ids: Vec<NodeId> = graph.nodes().map(|(id,label)| {
+        (id,label.to_owned())
+    }).map(|(id,label)| (id,label)).collect();
+    for (id,label) in &ids { result.add_node(*id,label)?; }
+    for i in 0..ids.len() {
+        for j in i+1..ids.len() {
+            let (a,b) = (ids[i].0,ids[j].0);
+            if !graph.edges().any(|e| e.from == a && e.to == b) {
+                result.add_edge(a,b)?;
+            }
+        }
+    }
+    Ok(result)
+}
+
+/// A minimum spanning forest represented by selected edges and total weight.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct SpanningForest {
+    /// Edges selected by Kruskal's algorithm, in deterministic selection order.
+    pub edges: Vec<crate::Edge>,
+    /// Sum of selected edge weights.
+    pub total_weight: u64,
+}
+
+/// Compute a minimum spanning forest with Kruskal's algorithm.
+///
+/// The weight map uses canonical (smaller, larger) endpoint pairs. Every graph
+/// edge must have a weight. Negative weights are not supported by this u64 API.
+pub fn minimum_spanning_forest(
+    graph: &Graph,
+    weights: &BTreeMap<(NodeId,NodeId),u64>,
+) -> Result<SpanningForest,GraphError> {
+    if graph.is_directed() { return Err(GraphError::RequiresUndirectedGraph); }
+    graph.validate()?;
+    let mut weighted = Vec::new();
+    for edge in graph.edges() {
+        let key = (edge.from.min(edge.to),edge.from.max(edge.to));
+        let weight = *weights.get(&key).ok_or_else(|| GraphError::InvalidRepresentation(
+            format!("missing weight for edge {}-{}",key.0,key.1)))?;
+        weighted.push((weight,key.0,key.1));
+    }
+    weighted.sort();
+    let mut parent: BTreeMap<NodeId,NodeId> = graph.nodes().map(|(id,_)| (id,id)).collect();
+    let mut rank: BTreeMap<NodeId,usize> = graph.nodes().map(|(id,_)| (id,0)).collect();
+    fn root(parent: &mut BTreeMap<NodeId,NodeId>, mut node: NodeId) -> NodeId {
+        while parent[&node] != node {
+            let grand = parent[&parent[&node]];
+            parent.insert(node,grand);
+            node = grand;
+        }
+        node
+    }
+    let mut selected = Vec::new();
+    let mut total_weight = 0_u64;
+    for (weight,a,b) in weighted {
+        if a == b { continue; }
+        let ra = root(&mut parent,a);
+        let rb = root(&mut parent,b);
+        if ra == rb { continue; }
+        let (low,high) = if rank[&ra] < rank[&rb] {(ra,rb)} else {(rb,ra)};
+        parent.insert(low,high);
+        if rank[&ra] == rank[&rb] {
+            *rank.get_mut(&high).expect("known root") += 1;
+        }
+        selected.push(crate::Edge {from:a,to:b});
+        total_weight = total_weight.checked_add(weight).ok_or_else(|| GraphError::InvalidRepresentation("spanning forest weight overflow".into()))?;
+    }
+    Ok(SpanningForest {edges:selected,total_weight})
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
